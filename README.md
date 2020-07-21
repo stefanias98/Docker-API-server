@@ -11,5 +11,5 @@ go run client/client.go post
 
 Car data can be DELETEd from the database on the path /deleteCar/"brand name" using
 ```console
-go run client/client.go delete "car name"
+go run client/client.go delete "brand name"
 ```
