@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
@@ -32,9 +33,10 @@ func main() {
 func handleRequests() {
 	mux := mux.NewRouter().StrictSlash(true)
 	mux.HandleFunc("/", homePage)
-	mux.HandleFunc("/data", returnAllData)
-	mux.HandleFunc("/data2", returnAllDataMarshal)
-	mux.HandleFunc("/data/{name}", returnSingleBlock)
+	mux.HandleFunc("/listCars", returnAllData)
+	mux.HandleFunc("/listCars/{name}", returnSingleBlock)
+	mux.HandleFunc("/listCars2", returnAllDataMarshal)
+	mux.HandleFunc("/addCar", writeNewData).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":10000", mux))
 }
@@ -51,21 +53,21 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func returnAllData(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: data -> returnAllData")
+	fmt.Println("Path visited: /data -> returnAllData")
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
 	encoder.Encode(data)
 }
 
 func returnAllDataMarshal(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: data2 -> returnAllDataMarshal")
+	fmt.Println("Path visited: /data2 -> returnAllDataMarshal")
 	resp, _ := json.MarshalIndent(data, "", "    ")
 	w.Write(resp)
 
 }
 
 func returnSingleBlock(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: data/{name} -> returnSingleBlock")
+	fmt.Println("Path visited: /data/{name} -> returnSingleBlock")
 	inputVar := mux.Vars(r)["name"]
 	found := false
 	for _, dataBlock := range data {
@@ -84,6 +86,22 @@ func returnSingleBlock(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
+
+}
+
+func writeNewData(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Path visited: /data POST -> writeNewData")
+	requestBody, _ := ioutil.ReadAll(r.Body)
+	fmt.Fprintf(w, "The data posted contains %+v \n", string(requestBody))
+
+	var dataBlock BlockOfData
+	err := json.Unmarshal(requestBody, &dataBlock)
+	if err != nil {
+		log.Fatalf("Most likely encountered incompatible struct format. Error is %+v \n", err)
+	}
+
+	data = append(data, dataBlock)
+	fmt.Fprintf(w, "Successfuly wrote data")
 
 }
 
