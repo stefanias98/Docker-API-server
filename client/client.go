@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
 //BlockOfData is a struct which hold the relevant data of a block
@@ -18,7 +19,12 @@ type blockOfData struct {
 }
 
 func main() {
-	postData()
+	if os.Args[1] == "post" {
+		postData()
+	} else if os.Args[1] == "delete" {
+		deleteData(os.Args[2])
+	}
+
 }
 
 func postData() {
@@ -33,6 +39,31 @@ func postData() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer response.Body.Close()
+	respBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(respBody))
+
+}
+
+func deleteData(brand string) {
+	fmt.Println("http://localhost:10000/deleteCar/" + brand)
+
+	client := &http.Client{}
+
+	request, err := http.NewRequest("DELETE", "http://localhost:10000/deleteCar/"+brand, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	response, err := client.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	defer response.Body.Close()
 	respBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {

@@ -37,6 +37,7 @@ func handleRequests() {
 	mux.HandleFunc("/listCars/{name}", returnSingleBlock)
 	mux.HandleFunc("/listCars2", returnAllDataMarshal)
 	mux.HandleFunc("/addCar", writeNewData).Methods("POST")
+	mux.HandleFunc("/deleteCar/{name}", deleteData).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":10000", mux))
 }
@@ -45,7 +46,7 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	timeNow := time.Now().String()
 	fmt.Fprintf(w, "Welcome to the REST API homepage! You accessed it at %+v from the IP address %+v \n", timeNow, readUserIP(r))
 	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, "If you wish to view all car data, go to path /data. For specific brand data, search for path /data/<brand name>\n ")
+	fmt.Fprintf(w, "If you wish to view all car data, go to path /listCars. For specific brand data, search for path /listCars/<brand name>\n ")
 	fmt.Fprintf(w, "\n")
 	fmt.Fprintf(w, "Request header data: %+v", r.Header)
 	fmt.Println("Path visited: homePage")
@@ -53,23 +54,24 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func returnAllData(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: /data -> returnAllData")
+	fmt.Println("Path visited: /listCars -> returnAllData")
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
 	encoder.Encode(data)
 }
 
 func returnAllDataMarshal(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: /data2 -> returnAllDataMarshal")
+	fmt.Println("Path visited: /listCars2 -> returnAllDataMarshal")
 	resp, _ := json.MarshalIndent(data, "", "    ")
 	w.Write(resp)
 
 }
 
 func returnSingleBlock(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: /data/{name} -> returnSingleBlock")
+	fmt.Println("Path visited: /listCars/{name} -> returnSingleBlock")
 	inputVar := mux.Vars(r)["name"]
 	found := false
+
 	for _, dataBlock := range data {
 		if dataBlock.Brand == inputVar {
 			fmt.Fprintf(w, "The specific brand query for %v is below \n", inputVar)
@@ -79,8 +81,9 @@ func returnSingleBlock(w http.ResponseWriter, r *http.Request) {
 			found = true
 		}
 	}
+
 	if found == false {
-		fmt.Fprintf(w, "The specific brand query for %v does not exist in the database \nThe available models are: ", inputVar)
+		fmt.Fprintf(w, "The specific brand query for %v does not exist in the database \nThe available brands are: ", inputVar)
 		for _, dataBlock := range data {
 			fmt.Fprintf(w, "%v, ", dataBlock.Brand)
 		}
@@ -90,7 +93,8 @@ func returnSingleBlock(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeNewData(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: /data POST -> writeNewData")
+	fmt.Println("Path visited: /addCar POST -> writeNewData")
+
 	requestBody, _ := ioutil.ReadAll(r.Body)
 	fmt.Fprintf(w, "The data posted contains %+v \n", string(requestBody))
 
@@ -102,6 +106,28 @@ func writeNewData(w http.ResponseWriter, r *http.Request) {
 
 	data = append(data, dataBlock)
 	fmt.Fprintf(w, "Successfuly wrote data")
+
+}
+
+func deleteData(w http.ResponseWriter, r *http.Request) {
+	inputVar := mux.Vars(r)["name"]
+	fmt.Println("Path visited: /deleteCar DELETE -> deleteData")
+
+	found := false
+	for i, dataBlock := range data {
+		if dataBlock.Brand == inputVar {
+			data = append(data[:i], data[i+1:]...)
+			found = true
+		}
+	}
+
+	if found == false {
+		fmt.Fprintf(w, "Unable to delete the brand %v since it is not available in the database \nThe available brands are: ", inputVar)
+		for _, dataBlock := range data {
+			fmt.Fprintf(w, "%v, ", dataBlock.Brand)
+		}
+
+	}
 
 }
 
