@@ -38,9 +38,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	book := Book{"", "", "", "", "", "", "", "", "", ""}
 	for _, v := range allData {
-		book := Book{"", "", "", "", "", "", "", "", "", ""}
+
 		for j, b := range v {
 			reflect.ValueOf(&book).Elem().Field(j).SetString(b)
 		}

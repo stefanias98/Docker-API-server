@@ -1,6 +1,6 @@
 <h1>Testing building a REST API in Golang using the net, encoding, and ioutil packages as well as the Gorilla toolkit</h1>
 
-<h2>Firstly for the car data</h2>
+<h2>Firstly, for the car data</h2>
 Go to localhost:10000/api/v1 to access the server home page, and visit paths /listCars and /listCars2 to retrieve the data on the server using two different methods with the same outcome. 
 
 Alternatively, a specific make of car can be retrieved by specifying its name in the URL path \listCars\"brand name". 

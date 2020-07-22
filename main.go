@@ -35,7 +35,7 @@ func handleRequests() {
 	mux := mux.NewRouter().StrictSlash(true)
 
 	mux1 := mux.PathPrefix("/api/v1").Subrouter()
-	mux1.HandleFunc("/", homePage)
+	mux1.HandleFunc("/", homePageV1)
 	mux1.HandleFunc("/listCars", returnAllData)
 	mux1.HandleFunc("/listCars/{name}", returnSingleBlock)
 	mux1.HandleFunc("/listCars2", returnAllDataMarshal)
@@ -43,7 +43,8 @@ func handleRequests() {
 	mux1.HandleFunc("/deleteCar/{name}", deleteData).Methods("DELETE")
 
 	mux2 := mux.PathPrefix("/api/v2").Subrouter()
-	mux2.HandleFunc("/", homePage)
+	mux2.HandleFunc("/", homePageV2)
+	mux2.HandleFunc("/listBooks", listBooks)
 
 	log.Fatal(http.ListenAndServe(":10000", mux))
 }
@@ -53,7 +54,7 @@ func handleRequests() {
 This is the localhost:10000/api/v1 (mux1) subroute path definition
 //////////////////////////////////////////////////////////////////
 */
-func homePage(w http.ResponseWriter, r *http.Request) {
+func homePageV1(w http.ResponseWriter, r *http.Request) {
 	timeNow := time.Now().String()
 	fmt.Fprintf(w, "Welcome to the REST API homepage! You accessed it at %+v from the IP address %+v \n", timeNow, readUserIP(r))
 	fmt.Fprintf(w, "\n")
@@ -148,15 +149,25 @@ This is the localhost:10000/api/v2 (mux2) subroute path definition
 //////////////////////////////////////////////////////////////////
 */
 
-func homePage2(w http.ResponseWriter, r *http.Request) {
+func homePageV2(w http.ResponseWriter, r *http.Request) {
 	timeNow := time.Now().String()
 	fmt.Fprintf(w, "Welcome to the REST API homepage! You accessed it at %+v from the IP address %+v \n", timeNow, readUserIP(r))
 	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, "This is where book data is stored from https://github.com/moficodes/bookdata-api")
+	fmt.Fprintf(w, "This is where book data is stored from https://github.com/moficodes/bookdata-api \n")
 	fmt.Fprintf(w, "\n")
 	fmt.Fprintf(w, "Request header data: %+v", r.Header)
-	fmt.Println("Path visited: homePage")
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " ")
 	fmt.Println("Server address:", r.Host)
+}
+
+func listBooks(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " -> listBooks")
+	jsonFile, err := ioutil.ReadFile("csvtojson/books.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	w.Write(jsonFile)
+
 }
 
 /*
