@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -32,16 +33,26 @@ func main() {
 
 func handleRequests() {
 	mux := mux.NewRouter().StrictSlash(true)
-	mux.HandleFunc("/", homePage)
-	mux.HandleFunc("/listCars", returnAllData)
-	mux.HandleFunc("/listCars/{name}", returnSingleBlock)
-	mux.HandleFunc("/listCars2", returnAllDataMarshal)
-	mux.HandleFunc("/addCar", writeNewData).Methods("POST")
-	mux.HandleFunc("/deleteCar/{name}", deleteData).Methods("DELETE")
+
+	mux1 := mux.PathPrefix("/api/v1").Subrouter()
+	mux1.HandleFunc("/", homePage)
+	mux1.HandleFunc("/listCars", returnAllData)
+	mux1.HandleFunc("/listCars/{name}", returnSingleBlock)
+	mux1.HandleFunc("/listCars2", returnAllDataMarshal)
+	mux1.HandleFunc("/addCar", writeNewData).Methods("POST")
+	mux1.HandleFunc("/deleteCar/{name}", deleteData).Methods("DELETE")
+
+	mux2 := mux.PathPrefix("/api/v2").Subrouter()
+	mux2.HandleFunc("/", homePage)
 
 	log.Fatal(http.ListenAndServe(":10000", mux))
 }
 
+/*
+//////////////////////////////////////////////////////////////////
+This is the localhost:10000/api/v1 (mux1) subroute path definition
+//////////////////////////////////////////////////////////////////
+*/
 func homePage(w http.ResponseWriter, r *http.Request) {
 	timeNow := time.Now().String()
 	fmt.Fprintf(w, "Welcome to the REST API homepage! You accessed it at %+v from the IP address %+v \n", timeNow, readUserIP(r))
@@ -54,21 +65,21 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func returnAllData(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: /listCars -> returnAllData")
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " -> returnAllData")
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "    ")
 	encoder.Encode(data)
 }
 
 func returnAllDataMarshal(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: /listCars2 -> returnAllDataMarshal")
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " -> returnAllDataMarshal")
 	resp, _ := json.MarshalIndent(data, "", "    ")
 	w.Write(resp)
 
 }
 
 func returnSingleBlock(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: /listCars/{name} -> returnSingleBlock")
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " -> returnSingleBlock")
 	inputVar := mux.Vars(r)["name"]
 	found := false
 
@@ -93,7 +104,7 @@ func returnSingleBlock(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeNewData(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Path visited: /addCar POST -> writeNewData")
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " POST -> writeNewData")
 
 	requestBody, _ := ioutil.ReadAll(r.Body)
 	fmt.Fprintf(w, "The data posted contains %+v \n", string(requestBody))
@@ -111,7 +122,7 @@ func writeNewData(w http.ResponseWriter, r *http.Request) {
 
 func deleteData(w http.ResponseWriter, r *http.Request) {
 	inputVar := mux.Vars(r)["name"]
-	fmt.Println("Path visited: /deleteCar DELETE -> deleteData")
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " DELETE -> deleteData")
 
 	found := false
 	for i, dataBlock := range data {
@@ -131,6 +142,28 @@ func deleteData(w http.ResponseWriter, r *http.Request) {
 
 }
 
+/*
+//////////////////////////////////////////////////////////////////
+This is the localhost:10000/api/v2 (mux2) subroute path definition
+//////////////////////////////////////////////////////////////////
+*/
+
+func homePage2(w http.ResponseWriter, r *http.Request) {
+	timeNow := time.Now().String()
+	fmt.Fprintf(w, "Welcome to the REST API homepage! You accessed it at %+v from the IP address %+v \n", timeNow, readUserIP(r))
+	fmt.Fprintf(w, "\n")
+	fmt.Fprintf(w, "This is where book data is stored from https://github.com/moficodes/bookdata-api")
+	fmt.Fprintf(w, "\n")
+	fmt.Fprintf(w, "Request header data: %+v", r.Header)
+	fmt.Println("Path visited: homePage")
+	fmt.Println("Server address:", r.Host)
+}
+
+/*
+//////////////////////////////////////////////////////////////////
+Helper functions
+//////////////////////////////////////////////////////////////////
+*/
 func readUserIP(r *http.Request) string {
 	IPAddress := r.Header.Get("X-Real-Ip")
 	if IPAddress == "" {
