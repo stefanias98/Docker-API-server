@@ -45,6 +45,11 @@ func handleRequests() {
 	mux2 := mux.PathPrefix("/api/v2").Subrouter()
 	mux2.HandleFunc("/", homePageV2)
 	mux2.HandleFunc("/listBooks", listBooks)
+	mux2.HandleFunc("/getID/{id}", returnByID)
+	mux2.HandleFunc("/getName/{name}", returnByName)
+	mux2.HandleFunc("/getAuthor/{author}", returnByAuthor)
+	mux2.HandleFunc("/getISBN10/{isbn10}", returnByISBN10)
+	mux2.HandleFunc("/getLanguage/{language}", returnByLanguage)
 
 	log.Fatal(http.ListenAndServe(":10000", mux))
 }
@@ -167,6 +172,154 @@ func listBooks(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	w.Write(jsonFile)
+
+}
+
+func returnByID(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " -> returnByID")
+	inputVar := mux.Vars(r)["id"]
+	found := false
+	var jsonMaps []map[string]string
+
+	jsonData, err := ioutil.ReadFile("csvtojson/books.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.Unmarshal(jsonData, &jsonMaps)
+	for _, dataBlock := range jsonMaps {
+		if dataBlock["ID"] == inputVar {
+			fmt.Fprintf(w, "The specific ID query for %v is below \n", inputVar)
+			encoder := json.NewEncoder(w)
+			encoder.SetIndent("", "    ")
+			encoder.Encode(dataBlock)
+			found = true
+		}
+	}
+
+	if found == false {
+		fmt.Fprintf(w, "The specific ID query for %v does not exist in the database \n", inputVar)
+
+	}
+
+}
+
+func returnByName(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " -> returnByName")
+	inputVar := mux.Vars(r)["name"]
+	found := false
+	var jsonMaps []map[string]string
+
+	jsonData, err := ioutil.ReadFile("csvtojson/books.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.Unmarshal(jsonData, &jsonMaps)
+	for _, dataBlock := range jsonMaps {
+		if dataBlock["Name"] == inputVar {
+			if found == false {
+				fmt.Fprintf(w, "The specific Name query for %v is below \n", inputVar)
+			}
+			encoder := json.NewEncoder(w)
+			encoder.SetIndent("", "    ")
+			encoder.Encode(dataBlock)
+			found = true
+		}
+	}
+
+	if found == false {
+		fmt.Fprintf(w, "The specific Name query for %v does not exist in the database \n", inputVar)
+
+	}
+
+}
+
+func returnByAuthor(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " -> returnByAuthor")
+	inputVar := mux.Vars(r)["author"]
+	found := false
+	var jsonMaps []map[string]string
+
+	jsonData, err := ioutil.ReadFile("csvtojson/books.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.Unmarshal(jsonData, &jsonMaps)
+	for _, dataBlock := range jsonMaps {
+		if dataBlock["Author"] == inputVar {
+			if found == false {
+				fmt.Fprintf(w, "The specific Author query for %v is below \n", inputVar)
+			}
+			encoder := json.NewEncoder(w)
+			encoder.SetIndent("", "    ")
+			encoder.Encode(dataBlock)
+			found = true
+		}
+	}
+
+	if found == false {
+		fmt.Fprintf(w, "The specific Author query for %v does not exist in the database \n", inputVar)
+
+	}
+
+}
+
+func returnByISBN10(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " -> returnByISBN10")
+	inputVar := mux.Vars(r)["isbn10"]
+	found := false
+	var jsonMaps []map[string]string
+
+	jsonData, err := ioutil.ReadFile("csvtojson/books.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.Unmarshal(jsonData, &jsonMaps)
+	for _, dataBlock := range jsonMaps {
+		if dataBlock["ISBN10"] == inputVar {
+			if found == false {
+				fmt.Fprintf(w, "The specific ISBN10 query for %v is below \n", inputVar)
+			}
+			encoder := json.NewEncoder(w)
+			encoder.SetIndent("", "    ")
+			encoder.Encode(dataBlock)
+			found = true
+		}
+	}
+
+	if found == false {
+		fmt.Fprintf(w, "The specific ISBN10 query for %v does not exist in the database \n", inputVar)
+
+	}
+
+}
+
+func returnByLanguage(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Path visited: " + html.EscapeString(r.URL.Path) + " -> returnByLanguage")
+	inputVar := mux.Vars(r)["language"]
+	found := false
+	var jsonMaps []map[string]string
+
+	jsonData, err := ioutil.ReadFile("csvtojson/books.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	json.Unmarshal(jsonData, &jsonMaps)
+	for _, dataBlock := range jsonMaps {
+		if dataBlock["Language"] == inputVar {
+			if found == false {
+				fmt.Fprintf(w, "The specific Language query for %v is below \n", inputVar)
+			}
+			encoder := json.NewEncoder(w)
+			encoder.SetIndent("", "    ")
+			encoder.Encode(dataBlock)
+			found = true
+		}
+	}
+
+	if found == false {
+		fmt.Fprintf(w, "The specific Language query for %v does not exist in the database \n", inputVar)
+
+	}
 
 }
 
