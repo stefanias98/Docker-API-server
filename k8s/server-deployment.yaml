@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  selector:
+    matchLabels:
+      component: api
+  template:
+    metadata:
+      labels:
+        component: api
+    spec:
+      containers:
+      - name: api-server
+        image: stefanias98/api-server
+        ports:
+        - containerPort: 10000
+        env:
+            - name: PORT_SERVER
+              value: "10000"
